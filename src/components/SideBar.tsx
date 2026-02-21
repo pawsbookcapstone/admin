@@ -25,11 +25,12 @@ const Sidebar: React.FC = () => {
 
   const menuItems = [
     { name: "Dashboard", path: "/", icon: <LayoutDashboard size={20} /> },
-    { name: "Posts", path: "/posts", icon: <FileText size={20} /> },
     { name: "Market", path: "/market", icon: <ShoppingBag size={20} /> },
     { name: "Reports", path: "/reports", icon: <BarChart3 size={20} /> },
     { name: "Users", path: "/users", icon: <Users size={20} /> },
     { name: "Community", path: "/communities", icon: <Component size={20} /> },
+    { name: "Subscriptions", path: "/subscriptions", icon: <Component size={20} /> },
+    { name: "Verifications", path: "/verifications", icon: <Component size={20} /> },
     { name: "PawsBook Pages", path: "/pages", icon: <Book size={20} /> },
   ];
 

@@ -8,6 +8,8 @@ import Users from "./pages/users";
 import Communities from "./pages/communities";
 import Pages from "./pages/pages";
 import Login from "./auth/login";
+import Subscriptions from "./pages/subscriptions";
+import Verifications from "./pages/verifications";
 
 function App() {
   return (
@@ -29,6 +31,8 @@ function App() {
                 <Route path="/users" element={<Users />} />
                 <Route path="/communities" element={<Communities />} />
                 <Route path="/pages" element={<Pages />} />
+                <Route path="/subscriptions" element={<Subscriptions />} />
+                <Route path="/verifications" element={<Verifications />} />
               </Routes>
             </Layout>
           }

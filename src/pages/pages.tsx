@@ -1,14 +1,6 @@
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Search, MoreVertical, Eye, Trash2 } from "lucide-react";
-
-interface Page {
-  id: number;
-  name: string;
-  avatar: string;
-  owner: string;
-  followers: number;
-  following: number;
-}
+import { collectionGroupName, collectionName, find, remove } from "../helpers/db";
 
 const Pages: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -16,75 +8,125 @@ const Pages: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
 
-  const [pages, setPages] = useState<Page[]>([
-    {
-      id: 1,
-      name: "Happy Paws Shelter 🐾",
-      avatar: "https://images.unsplash.com/photo-1601758125946-1c1b7f9d7b5a",
-      owner: "Jane Doe",
-      followers: 1250,
-      following: 240,
-    },
-    {
-      id: 2,
-      name: "Cat Lovers Hub 🐱",
-      avatar: "https://images.unsplash.com/photo-1592194996308-7b43878e84a6",
-      owner: "John Smith",
-      followers: 980,
-      following: 310,
-    },
-    {
-      id: 3,
-      name: "Puppy Paradise 🐶",
-      avatar: "https://images.unsplash.com/photo-1558788353-f76d92427f16",
-      owner: "Emily Brown",
-      followers: 2040,
-      following: 190,
-    },
-    {
-      id: 4,
-      name: "Exotic Birds Club 🦜",
-      avatar: "https://images.unsplash.com/photo-1618828669029-51d0a6bc82c9",
-      owner: "Chris Green",
-      followers: 450,
-      following: 80,
-    },
-    {
-      id: 5,
-      name: "Pet Grooming Experts ✂️",
-      avatar: "https://images.unsplash.com/photo-1583511655857-d19b40a7a54e",
-      owner: "Sarah White",
-      followers: 890,
-      following: 220,
-    },
-    {
-      id: 6,
-      name: "Wildlife Watchers 🦁",
-      avatar: "https://images.unsplash.com/photo-1555685812-4b943f1cb0eb",
-      owner: "Alex Johnson",
-      followers: 730,
-      following: 110,
-    },
+  const [pages, setPages] = useState<any>([
+    // {
+    //   id: 1,
+    //   name: "Happy Paws Shelter 🐾",
+    //   avatar: "https://images.unsplash.com/photo-1601758125946-1c1b7f9d7b5a",
+    //   owner: "Jane Doe",
+    //   followers: 1250,
+    //   following: 240,
+    // },
+    // {
+    //   id: 2,
+    //   name: "Cat Lovers Hub 🐱",
+    //   avatar: "https://images.unsplash.com/photo-1592194996308-7b43878e84a6",
+    //   owner: "John Smith",
+    //   followers: 980,
+    //   following: 310,
+    // },
+    // {
+    //   id: 3,
+    //   name: "Puppy Paradise 🐶",
+    //   avatar: "https://images.unsplash.com/photo-1558788353-f76d92427f16",
+    //   owner: "Emily Brown",
+    //   followers: 2040,
+    //   following: 190,
+    // },
+    // {
+    //   id: 4,
+    //   name: "Exotic Birds Club 🦜",
+    //   avatar: "https://images.unsplash.com/photo-1618828669029-51d0a6bc82c9",
+    //   owner: "Chris Green",
+    //   followers: 450,
+    //   following: 80,
+    // },
+    // {
+    //   id: 5,
+    //   name: "Pet Grooming Experts ✂️",
+    //   avatar: "https://images.unsplash.com/photo-1583511655857-d19b40a7a54e",
+    //   owner: "Sarah White",
+    //   followers: 890,
+    //   following: 220,
+    // },
+    // {
+    //   id: 6,
+    //   name: "Wildlife Watchers 🦁",
+    //   avatar: "https://images.unsplash.com/photo-1555685812-4b943f1cb0eb",
+    //   owner: "Alex Johnson",
+    //   followers: 730,
+    //   following: 110,
+    // },
   ]);
+  
+  const pagination = useMemo(() => {
+    const filteredPages = pages.filter(
+      (p:any) =>
+        p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        p.owner.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    const indexOfLast = currentPage * itemsPerPage;
+    const indexOfFirst = indexOfLast - itemsPerPage;
+    const currentPages = filteredPages.slice(indexOfFirst, indexOfLast);
+    const totalPages = Math.ceil(filteredPages.length / itemsPerPage);
 
-  // Filtering
-  const filteredPages = pages.filter(
-    (p) =>
-      p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      p.owner.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+    return {
+      currentPages,
+      totalPages
+    }
+  }, [currentPage, pages, searchTerm])
 
-  // Pagination logic
-  const indexOfLast = currentPage * itemsPerPage;
-  const indexOfFirst = indexOfLast - itemsPerPage;
-  const currentPages = filteredPages.slice(indexOfFirst, indexOfLast);
-  const totalPages = Math.ceil(filteredPages.length / itemsPerPage);
+  useEffect(() => {
+    const fetchPages = async () => {
+      const snap = await collectionName("users")
+        .whereEquals("is_page", true)
+        // .orderBy('created_at')?
+        .get();
+
+      if (snap.docs.length === 0) {
+        setPages([]);
+        return;
+      }
+
+      const pages = await Promise.all(
+        snap.docs.map(async (dc) => {
+          const d = dc.data();
+
+          const [followers, following, creatorSnap] = await Promise.all([
+            collectionName("users", dc.id, "followers").count(),
+            collectionGroupName("followers")
+              .whereEquals("follower_id", dc.id)
+              .count(),
+            find("users", d.creator_id),
+          ]);
+
+          const creator = creatorSnap?.data();
+
+          return {
+            id: dc.id,
+            name: d.firstname,
+            avatar: d.img_path,
+            owner: `${creator?.firstname ?? ""} ${creator?.lastname ?? ""}`,
+            followers,
+            following,
+          };
+        })
+      );
+
+      setPages(pages);
+    };
+
+    fetchPages();
+  }, []);
+
 
   // Handlers
-  const handleDelete = (id: number) => {
+  const handleDelete = (id: string) => {
     if (window.confirm("Are you sure you want to delete this page?")) {
-      setPages((prev) => prev.filter((p) => p.id !== id));
+      setPages((prev:any) => prev.filter((p:any) => p.id !== id));
       setOpenMenuId(null);
+      
+      remove("users", id)
     }
   };
 
@@ -121,7 +163,7 @@ const Pages: React.FC = () => {
             </tr>
           </thead>
           <tbody>
-            {currentPages.length === 0 ? (
+            {pagination.currentPages.length === 0 ? (
               <tr>
                 <td
                   colSpan={5}
@@ -131,7 +173,7 @@ const Pages: React.FC = () => {
                 </td>
               </tr>
             ) : (
-              currentPages.map((page) => (
+              pagination.currentPages.map((page:any) => (
                 <tr
                   key={page.id}
                   className="border-t border-gray-200 hover:bg-gray-50 transition-all"
@@ -165,12 +207,12 @@ const Pages: React.FC = () => {
 
                     {openMenuId === page.id && (
                       <div className="absolute right-4 top-10 bg-white border border-gray-200 rounded-lg shadow-md w-36 z-10">
-                        <button
+                        {/* <button
                           onClick={() => alert(`Viewing ${page.name}`)}
                           className="flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"
                         >
                           <Eye size={14} /> View Page
-                        </button>
+                        </button> */}
                         <button
                           onClick={() => handleDelete(page.id)}
                           className="flex items-center gap-2 w-full px-3 py-2 text-sm text-red-600 hover:bg-red-50"
@@ -188,9 +230,9 @@ const Pages: React.FC = () => {
       </div>
 
       {/* Pagination */}
-      {totalPages > 1 && (
+      {pagination.totalPages > 1 && (
         <div className="flex justify-center items-center gap-2 mt-6">
-          {Array.from({ length: totalPages }, (_, i) => (
+          {Array.from({ length: pagination.totalPages }, (_, i) => (
             <button
               key={i + 1}
               onClick={() => handlePageChange(i + 1)}
