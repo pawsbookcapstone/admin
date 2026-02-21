@@ -12,14 +12,22 @@ import {
   X,
 } from "lucide-react";
 import { createPortal } from "react-dom";
+import { auth } from "../helpers/firebase";
+import { useAppContext } from "../AppsProvider";
 
 const Sidebar: React.FC = () => {
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const navigate = useNavigate();
+  const {setUserId, setUserEmail, setUserName, setGcashNumber} = useAppContext()
 
   const handleLogout = () => {
     localStorage.removeItem("isLoggedIn");
     setShowLogoutModal(false);
+    auth.signOut();
+    setUserId(null)
+    setUserEmail(null)
+    setUserName(null)
+    setGcashNumber(null)
     navigate("/login");
   };
 
