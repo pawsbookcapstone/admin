@@ -1,24 +1,59 @@
 import React, { useState } from "react";
 import { Lock, Mail, PawPrint } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "../helpers/firebase";
+import { find } from "../helpers/db";
+import { useAppContext } from "../AppsProvider";
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
+  const {setUserId, setUserEmail, setUserName, setGcashNumber} = useAppContext()
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Simulate login authentication (replace with real API later)
-    if (email === "admin@pawsbook.com" && password === "admin123") {
-      console.log("Login successful");
-      // Save to localStorage or context if needed
+
+    try {
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        email,
+        password,
+      );
+
+      const userId = userCredential.user.uid;
+
+      const userDoc = await find("admin_users", userId);
+
+      if (!userDoc.exists()) {
+        await auth.signOut();
+        throw "Account not found!!!";
+      }
+      
       localStorage.setItem("isLoggedIn", "true");
+      
+      const data = userDoc.data()
+      setUserId(userId)
+      setUserEmail(data.email)
+      setUserName(data.name)
+      setGcashNumber(data.gcash_number)
+      
       navigate("/"); // redirect to Dashboard
-    } else {
-      alert("Invalid credentials. Please try again.");
+    } catch(e) {
+      alert(e)
     }
+
+    // // Simulate login authentication (replace with real API later)
+    // if (email === "admin@pawsbook.com" && password === "admin123") {
+    //   console.log("Login successful");
+    //   // Save to localStorage or context if needed
+    //   localStorage.setItem("isLoggedIn", "true");
+    //   navigate("/"); // redirect to Dashboard
+    // } else {
+    //   alert("Invalid credentials. Please try again.");
+    // }
   };
 
   return (

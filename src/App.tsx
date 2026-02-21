@@ -10,35 +10,38 @@ import Pages from "./pages/pages";
 import Login from "./auth/login";
 import Subscriptions from "./pages/subscriptions";
 import Verifications from "./pages/verifications";
+import { AppsProvider } from "./AppsProvider";
 
 function App() {
   return (
-    <Router>
-      <Routes>
-        {/* Login route — NO LAYOUT */}
-        <Route path="/login" element={<Login />} />
+    <AppsProvider>
+      <Router>
+        <Routes>
+          {/* Login route — NO LAYOUT */}
+          <Route path="/login" element={<Login />} />
 
-        {/* All other routes — WITH LAYOUT */}
-        <Route
-          path="*"
-          element={
-            <Layout>
-              <Routes>
-                <Route path="/" element={<Dashboard />} />
-                <Route path="/posts" element={<Posts />} />
-                <Route path="/market" element={<Market />} />
-                <Route path="/reports" element={<Reports />} />
-                <Route path="/users" element={<Users />} />
-                <Route path="/communities" element={<Communities />} />
-                <Route path="/pages" element={<Pages />} />
-                <Route path="/subscriptions" element={<Subscriptions />} />
-                <Route path="/verifications" element={<Verifications />} />
-              </Routes>
-            </Layout>
-          }
-        />
-      </Routes>
-    </Router>
+          {/* All other routes — WITH LAYOUT */}
+          <Route
+            path="*"
+            element={
+              <Layout>
+                <Routes>
+                  <Route path="/" element={<Dashboard />} />
+                  <Route path="/posts" element={<Posts />} />
+                  <Route path="/market" element={<Market />} />
+                  <Route path="/reports" element={<Reports />} />
+                  <Route path="/users" element={<Users />} />
+                  <Route path="/communities" element={<Communities />} />
+                  <Route path="/pages" element={<Pages />} />
+                  <Route path="/subscriptions" element={<Subscriptions />} />
+                  <Route path="/verifications" element={<Verifications />} />
+                </Routes>
+              </Layout>
+            }
+          />
+        </Routes>
+      </Router>
+    </AppsProvider>
   );
 }
 
