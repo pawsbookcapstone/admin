@@ -11,6 +11,7 @@ import Login from "./auth/login";
 import Subscriptions from "./pages/subscriptions";
 import Verifications from "./pages/verifications";
 import { AppsProvider } from "./AppsProvider";
+import Gcash from "./pages/gcash";
 
 function App() {
   return (
@@ -35,6 +36,7 @@ function App() {
                   <Route path="/pages" element={<Pages />} />
                   <Route path="/subscriptions" element={<Subscriptions />} />
                   <Route path="/verifications" element={<Verifications />} />
+                  <Route path="/gcash" element={<Gcash />} />
                 </Routes>
               </Layout>
             }

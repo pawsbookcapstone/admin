@@ -87,17 +87,22 @@ const Pages: React.FC = () => {
         setPages([]);
         return;
       }
+      const creators: { [key: string]: Promise<any> } = {};
 
-      const pages = await Promise.all(
+      const _pages = await Promise.all(
         snap.docs.map(async (dc) => {
           const d = dc.data();
+
+          if (!creators[d.creator_id]) {
+            creators[d.creator_id] = find("users", d.creator_id);
+          }
 
           const [followers, following, creatorSnap] = await Promise.all([
             collectionName("users", dc.id, "followers").count(),
             collectionGroupName("followers")
               .whereEquals("follower_id", dc.id)
               .count(),
-            find("users", d.creator_id),
+            creators[d.creator_id],
           ]);
 
           const creator = creatorSnap?.data();
@@ -112,9 +117,9 @@ const Pages: React.FC = () => {
           };
         })
       );
+      setPages(_pages)
+    }
 
-      setPages(pages);
-    };
 
     fetchPages();
   }, []);

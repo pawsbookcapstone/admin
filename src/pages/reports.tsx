@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import { collectionName, find, remove, update } from "../helpers/db";
+import { collectionName, find, remove, set, update } from "../helpers/db";
 import { formatDate } from "../helpers/dateFormatter";
 import type { Timestamp } from "firebase/firestore";
 
@@ -299,6 +299,10 @@ const handleDelete = (id: string) => {
      remove("reported-post",id);
     setReports((prev) => prev.filter((r) => r.id !== id));
     setOpenMenuId(null);
+    find("escalated_reports", "1")
+      .then(dc => {
+        set("escalated_reports", "1").value({total: (dc.data()?.total as number  ?? 0) + 1})
+      })
   }
 };
 

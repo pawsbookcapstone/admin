@@ -7,8 +7,8 @@ import { find } from "../helpers/db";
 import { useAppContext } from "../AppsProvider";
 
 const Login: React.FC = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState("admin@admin.com");
+  const [password, setPassword] = useState("password");
   const navigate = useNavigate();
   const {setUserId, setUserEmail, setUserName, setGcashNumber} = useAppContext()
 

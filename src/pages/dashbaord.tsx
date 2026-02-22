@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   Users,
   FileText,
@@ -10,109 +10,91 @@ import {
   Trash2,
   CheckCircle,
 } from "lucide-react";
+import { collectionName, find, remove, set } from "../helpers/db";
 
 const Dashboard: React.FC = () => {
-  const usersData = [
-    {
-      id: 1,
-      name: "Jane Doe",
-      status: "Active",
-      avatar: "https://i.pravatar.cc/100?img=1",
-    },
-    {
-      id: 2,
-      name: "John Smith",
-      status: "Active",
-      avatar: "https://i.pravatar.cc/100?img=2",
-    },
-    {
-      id: 3,
-      name: "Emily Brown",
-      status: "Inactive",
-      avatar: "https://i.pravatar.cc/100?img=3",
-    },
-    {
-      id: 4,
-      name: "Daniel Green",
-      status: "Active",
-      avatar: "https://i.pravatar.cc/100?img=4",
-    },
-    {
-      id: 5,
-      name: "Sophia White",
-      status: "Active",
-      avatar: "https://i.pravatar.cc/100?img=5",
-    },
-    {
-      id: 6,
-      name: "Michael Johnson",
-      status: "Inactive",
-      avatar: "https://i.pravatar.cc/100?img=6",
-    },
-    {
-      id: 7,
-      name: "Liam Wilson",
-      status: "Active",
-      avatar: "https://i.pravatar.cc/100?img=7",
-    },
-    {
-      id: 8,
-      name: "Olivia Garcia",
-      status: "Active",
-      avatar: "https://i.pravatar.cc/100?img=8",
-    },
-  ];
+  const [communities, setCommunities] = useState<any>([]);
 
-  const communities = [
-    {
-      id: 1,
-      name: "Tech Enthusiasts",
-      members: 320,
-      status: "Active",
-      image: "https://placehold.co/64x64?text=T",
-    },
-    {
-      id: 2,
-      name: "Pet Lovers",
-      members: 210,
-      status: "Active",
-      image: "https://placehold.co/64x64?text=P",
-    },
-    {
-      id: 3,
-      name: "Travelers Hub",
-      members: 150,
-      status: "Inactive",
-      image: "https://placehold.co/64x64?text=H",
-    },
-  ];
-
-  const [users, setUsers] = useState(usersData);
+  const [users, setUsers] = useState<any>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [openDropdown, setOpenDropdown] = useState<number | null>(null);
+  const [escalated, setEscalated] = useState<number>(0);
+  const [pending, setPending] = useState<number>(0);
+  const [resolved, setResolved] = useState<number>(0);
   const usersPerPage = 4;
 
-  const filteredUsers = users.filter(
-    (user) =>
-      user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.status.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const paginated = useMemo(()=> {
+    const filteredUsers = users.filter(
+      (user:any) =>
+        user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        user.status.toLowerCase().includes(searchTerm.toLowerCase())
+    );
 
-  const totalPages = Math.ceil(filteredUsers.length / usersPerPage);
-  const startIndex = (currentPage - 1) * usersPerPage;
-  const currentUsers = filteredUsers.slice(
-    startIndex,
-    startIndex + usersPerPage
-  );
+    const totalPages = Math.ceil(filteredUsers.length / usersPerPage);
+    const startIndex = (currentPage - 1) * usersPerPage;
+    const currentUsers = filteredUsers.slice(
+      startIndex,
+      startIndex + usersPerPage
+    );
+
+    return {
+      totalPages,
+      currentUsers
+    }
+  }, [users, currentPage, searchTerm])
+
+  useEffect(() => {
+    collectionName("users")
+      .whereEquals("is_page", false)
+      .getMapped((id, data) => ({name: `${data.firstname} ${data.lastname}`, id, status: data.active_status == 'active' ? "Active" : "Inactive", avatar: data.img_path}))
+      .then(d => {
+        setUsers(d)
+      })
+
+    find("escalated_reports", "1")
+      .then(dc => {
+        if (!dc.exists()){
+          set("escalated_reports", "1").value({
+            total: 0
+          })
+          return
+        }
+        setEscalated(dc.data().total)
+      })
+
+    collectionName("reported-post")
+      .get()
+      .then(({docs}) => {
+        let _pending = 0
+        let _resolved = 0
+
+        for (const d of docs){
+          if (d.data().status === "pending") _pending++
+          else _resolved++
+        }
+        setPending(_pending)
+        setResolved(_resolved)
+      })
+
+    collectionName("groups")
+      .getMapped((id, data) => ({id, name: data.title, members: data.members, image: data.profile, status:"Active"}))
+      .then((d) => {
+        setCommunities(d)
+      })
+  }, [])
+
+  const totalReports = useMemo(() => {
+    return resolved + escalated + pending
+  }, [resolved, escalated, pending])
 
   const handlePageChange = (page: number) => {
-    if (page >= 1 && page <= totalPages) setCurrentPage(page);
+    if (page >= 1 && page <= paginated.totalPages) setCurrentPage(page);
   };
 
   const handleToggleStatus = (id: number) => {
-    setUsers((prev) =>
-      prev.map((user) =>
+    setUsers((prev:any) =>
+      prev.map((user:any) =>
         user.id === id
           ? {
               ...user,
@@ -124,12 +106,13 @@ const Dashboard: React.FC = () => {
     setOpenDropdown(null);
   };
 
-  const handleDelete = (id: number) => {
+  const handleDelete = (id: string) => {
     const confirmDelete = window.confirm(
       "Are you sure you want to delete this user?"
     );
     if (confirmDelete) {
-      setUsers((prev) => prev.filter((user) => user.id !== id));
+      setUsers((prev:any) => prev.filter((user:any) => user.id !== id));
+      remove("users", id)
     }
     setOpenDropdown(null);
   };
@@ -160,19 +143,19 @@ const Dashboard: React.FC = () => {
             <tbody className="divide-y divide-gray-100">
               <tr>
                 <td className="py-3 text-gray-600">Total Reports</td>
-                <td className="text-right font-semibold text-gray-800">312</td>
+                <td className="text-right font-semibold text-gray-800">{totalReports}</td>
               </tr>
               <tr>
                 <td className="py-3 text-gray-600">Pending</td>
-                <td className="text-right font-semibold text-yellow-600">48</td>
+                <td className="text-right font-semibold text-yellow-600">{pending}</td>
               </tr>
               <tr>
                 <td className="py-3 text-gray-600">Resolved</td>
-                <td className="text-right font-semibold text-green-600">264</td>
+                <td className="text-right font-semibold text-green-600">{resolved}</td>
               </tr>
               <tr>
                 <td className="py-3 text-gray-600">Escalated</td>
-                <td className="text-right font-semibold text-red-600">6</td>
+                <td className="text-right font-semibold text-red-600">{escalated}</td>
               </tr>
             </tbody>
           </table>
@@ -191,7 +174,7 @@ const Dashboard: React.FC = () => {
 
           <table className="min-w-full text-sm border-collapse">
             <tbody className="divide-y divide-gray-100">
-              {communities.map((community) => (
+              {communities.map((community:any) => (
                 <tr key={community.id} className="hover:bg-gray-50 transition">
                   <td className="py-3 flex items-center space-x-3">
                     <img
@@ -263,7 +246,7 @@ const Dashboard: React.FC = () => {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
-            {currentUsers.map((user) => (
+            {paginated.currentUsers.map((user:any) => (
               <tr
                 key={user.id}
                 className="hover:bg-gray-50 transition relative"
@@ -299,7 +282,7 @@ const Dashboard: React.FC = () => {
 
                   {openDropdown === user.id && (
                     <div className="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded-lg shadow-lg z-10 text-sm">
-                      <button
+                      {/* <button
                         onClick={() => handleView(user)}
                         className="flex items-center gap-2 w-full px-3 py-2 hover:bg-gray-50 text-gray-700"
                       >
@@ -319,7 +302,7 @@ const Dashboard: React.FC = () => {
                             <CheckCircle size={14} /> Activate
                           </>
                         )}
-                      </button>
+                      </button> */}
 
                       <button
                         onClick={() => handleDelete(user.id)}
@@ -337,7 +320,7 @@ const Dashboard: React.FC = () => {
 
         {/* Pagination */}
         <div className="flex justify-center mt-6 space-x-1">
-          {Array.from({ length: totalPages }).map((_, index) => (
+          {Array.from({ length: paginated.totalPages }).map((_, index) => (
             <button
               key={index + 1}
               onClick={() => handlePageChange(index + 1)}
