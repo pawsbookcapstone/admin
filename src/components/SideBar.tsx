@@ -2,14 +2,15 @@ import React, { useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
-  FileText,
-  ShoppingBag,
+  ChartAreaIcon,
   BarChart3,
   Users,
   Component,
   Book,
   LogOut,
+  DollarSign,
   X,
+  Verified,
 } from "lucide-react";
 import { createPortal } from "react-dom";
 import { auth } from "../helpers/firebase";
@@ -21,7 +22,7 @@ const Sidebar: React.FC = () => {
   const {setUserId, setUserEmail, setUserName, setGcashNumber} = useAppContext()
 
   const handleLogout = () => {
-    localStorage.removeItem("isLoggedIn");
+    localStorage.removeItem("logged_user");
     setShowLogoutModal(false);
     auth.signOut();
     setUserId(null)
@@ -37,10 +38,10 @@ const Sidebar: React.FC = () => {
     { name: "Reports", path: "/reports", icon: <BarChart3 size={20} /> },
     { name: "Users", path: "/users", icon: <Users size={20} /> },
     { name: "Community", path: "/communities", icon: <Component size={20} /> },
-    { name: "Subscriptions", path: "/subscriptions", icon: <Component size={20} /> },
-    { name: "Verifications", path: "/verifications", icon: <Component size={20} /> },
+    { name: "Subscriptions", path: "/subscriptions", icon: <ChartAreaIcon size={20} /> },
+    { name: "Verifications", path: "/verifications", icon: <Verified size={20} /> },
     { name: "PawsBook Pages", path: "/pages", icon: <Book size={20} /> },
-    { name: "Gcash Number", path: "/gcash", icon: <Book size={20} /> },
+    { name: "Gcash Number", path: "/gcash", icon: <DollarSign size={20} /> },
   ];
 
   return (

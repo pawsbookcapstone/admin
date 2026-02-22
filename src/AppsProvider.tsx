@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 
 type AppContextType = {
   userId: string | null;
@@ -27,6 +27,19 @@ export const AppsProvider = ({ children }: { children: ReactNode }) => {
   const [userName, setUserName] = useState<string | null>(null);
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [gcashNumber, setGcashNumber] = useState<string | null>(null);
+
+  useEffect(()=>{
+    const usersData = localStorage.getItem("logged_user")
+    if (!usersData) return
+
+    const user = JSON.parse(usersData)
+    console.log(user);
+    
+    setUserId(user.id)
+    setUserName(user.name)
+    setUserEmail(user.email)
+    setGcashNumber(user.gcash_number)
+  }, [])
 
   return (
     <AppContext.Provider

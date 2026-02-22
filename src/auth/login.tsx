@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Lock, Mail, PawPrint } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { signInWithEmailAndPassword } from "firebase/auth";
@@ -7,14 +7,18 @@ import { find } from "../helpers/db";
 import { useAppContext } from "../AppsProvider";
 
 const Login: React.FC = () => {
+  const {userId, setUserId, setUserEmail, setUserName, setGcashNumber} = useAppContext()
+
   const [email, setEmail] = useState("admin@admin.com");
   const [password, setPassword] = useState("password");
   const navigate = useNavigate();
-  const {setUserId, setUserEmail, setUserName, setGcashNumber} = useAppContext()
+
+  useEffect(() => {
+    if (userId) navigate('/')
+  }, [userId])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
 
     try {
       const userCredential = await signInWithEmailAndPassword(
@@ -32,9 +36,13 @@ const Login: React.FC = () => {
         throw "Account not found!!!";
       }
       
-      localStorage.setItem("isLoggedIn", "true");
-      
       const data = userDoc.data()
+
+      localStorage.setItem("logged_user", JSON.stringify({
+        id: userId,
+        ...data
+      }))
+      
       setUserId(userId)
       setUserEmail(data.email)
       setUserName(data.name)

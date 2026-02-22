@@ -1,19 +1,7 @@
 import React, { useEffect, useMemo, useState, type JSX } from "react";
 import {
   Search,
-  Eye,
-  Trash2,
   Calendar,
-  MoreVertical,
-  Heart,
-  MessageCircle,
-  Share2,
-  CheckCircle,
-  Globe,
-  Users,
-  PawPrint,
-  Home,
-  LayoutGrid,
 } from "lucide-react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
@@ -157,7 +145,7 @@ const Subscriptions: React.FC = () => {
               </div>
 
               <div className="flex gap-2 items-center mb-4">
-                <label htmlFor="" className="italic text-gray-600">Reference Number</label>
+                <label htmlFor="" className="italic text-gray-600">Reference Number :</label>
                 <p className="font-semibold">
                   {subscription.refNumber}
                 </p>
