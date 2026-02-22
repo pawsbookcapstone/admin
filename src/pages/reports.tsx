@@ -15,7 +15,6 @@ import {
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { collectionName, find, remove, set, update } from "../helpers/db";
-import { formatDate } from "../helpers/dateFormatter";
 import type { Timestamp } from "firebase/firestore";
 
 interface Report {
@@ -645,7 +644,7 @@ const handleDelete = (id: string) => {
         <img
           src={img}
           alt={`Post image ${idx + 1}`}
-          className="w-20 h-20 object-cover rounded-lg flex-shrink-0"
+          className="w-20 h-20 object-cover rounded-lg flex-0"
         />
       </a>
     ))}
@@ -710,7 +709,7 @@ const handleDelete = (id: string) => {
                 key={idx}
                 src={img}
                 alt={`Post image ${idx + 1}`}
-                className="w-24 h-24 object-cover rounded-lg flex-shrink-0"
+                className="w-24 h-24 object-cover rounded-lg flex-0"
               />
             ))}
           </div>

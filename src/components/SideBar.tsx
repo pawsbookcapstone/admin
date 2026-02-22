@@ -19,7 +19,7 @@ import { useAppContext } from "../AppsProvider";
 const Sidebar: React.FC = () => {
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const navigate = useNavigate();
-  const {setUserId, setUserEmail, setUserName, setGcashNumber} = useAppContext()
+  const {setUserId, setUserEmail, setUserName, setGcashNumber, setGcashNumberQR} = useAppContext()
 
   const handleLogout = () => {
     localStorage.removeItem("logged_user");
@@ -29,6 +29,7 @@ const Sidebar: React.FC = () => {
     setUserEmail(null)
     setUserName(null)
     setGcashNumber(null)
+    setGcashNumberQR(null)
     navigate("/login");
   };
 

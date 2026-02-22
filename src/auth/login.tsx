@@ -7,7 +7,7 @@ import { find } from "../helpers/db";
 import { useAppContext } from "../AppsProvider";
 
 const Login: React.FC = () => {
-  const {userId, setUserId, setUserEmail, setUserName, setGcashNumber} = useAppContext()
+  const {userId, setUserId, setUserEmail, setUserName, setGcashNumber, setGcashNumberQR} = useAppContext()
 
   const [email, setEmail] = useState("admin@admin.com");
   const [password, setPassword] = useState("password");
@@ -47,6 +47,7 @@ const Login: React.FC = () => {
       setUserEmail(data.email)
       setUserName(data.name)
       setGcashNumber(data.gcash_number)
+      setGcashNumberQR(data.gcash_qr)
       
       navigate("/"); // redirect to Dashboard
     } catch(e) {

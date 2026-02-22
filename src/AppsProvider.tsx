@@ -12,6 +12,9 @@ type AppContextType = {
 
   gcashNumber: string | null;
   setGcashNumber: (value: string | null) => void;
+
+  gcashNumberQR: string | null;
+  setGcashNumberQR: (value: string | null) => void;
 };
 
 const AppContext = createContext<AppContextType | null>(null);
@@ -27,18 +30,19 @@ export const AppsProvider = ({ children }: { children: ReactNode }) => {
   const [userName, setUserName] = useState<string | null>(null);
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [gcashNumber, setGcashNumber] = useState<string | null>(null);
+  const [gcashNumberQR, setGcashNumberQR] = useState<string | null>(null);
 
   useEffect(()=>{
     const usersData = localStorage.getItem("logged_user")
     if (!usersData) return
 
     const user = JSON.parse(usersData)
-    console.log(user);
     
     setUserId(user.id)
     setUserName(user.name)
     setUserEmail(user.email)
     setGcashNumber(user.gcash_number)
+    setGcashNumberQR(user.gcash_qr)
   }, [])
 
   return (
@@ -49,7 +53,8 @@ export const AppsProvider = ({ children }: { children: ReactNode }) => {
         userName,
         setUserName,
         userEmail,
-        setUserEmail,gcashNumber, setGcashNumber
+        setUserEmail,gcashNumber, setGcashNumber,
+        gcashNumberQR, setGcashNumberQR
       }}
     >
       {children}
